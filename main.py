@@ -1,7 +1,18 @@
 from fastapi import FastAPI      # importing a packaging
 from app.routers import register  #to include register page into main file 
 
+
+from app.database.database import engine, Base
+from app.models.user import User
+
+
+
 app = FastAPI()                # create object or var to store fastapi application
+
+
+
+Base.metadata.create_all(bind=engine)
+
 
 app.include_router(register.router)     #link the apirouter (bunch of api's) to this main appliction 
 
