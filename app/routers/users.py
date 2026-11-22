@@ -1,5 +1,6 @@
 
 from fastapi import APIRouter, Depends, Query
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database.database import get_db
@@ -22,6 +23,26 @@ router = APIRouter(
     prefix="/users",
     tags=["User Management"]
 )
+
+
+# List active employees - Admin and Manager
+@router.get("/employees/", response_model=list[UserResponse])
+def list_active_employees(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_roles("ADMIN", "MANAGER")
+    )
+):
+    query = (
+        select(User)
+        .where(
+            User.role == "EMPLOYEE",
+            User.is_active.is_(True)
+        )
+        .order_by(User.name)
+    )
+
+    return db.execute(query).scalars().all()
 
 
 # List all users - Admin only
